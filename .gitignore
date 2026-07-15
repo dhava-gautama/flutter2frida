@@ -16,3 +16,4 @@ frida_output.txt
 tmp_*/
 flutter_tls_*/
 .env
+/.gitignore
