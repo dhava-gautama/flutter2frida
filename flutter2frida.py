@@ -70,6 +70,9 @@ class Config:
     FLUTTER_DEPS_URL = (
         "https://raw.githubusercontent.com/flutter/flutter/refs/tags/{version}/DEPS"
     )
+    ENGINE_DEPS_URL = (
+        "https://raw.githubusercontent.com/flutter/engine/{engine_commit}/DEPS"
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -319,12 +322,25 @@ def find_flutter_version(
     return None
 
 
-def get_boringssl_revision(version: str) -> "Optional[str]":
+def get_boringssl_revision(version: str, engine_commit: "Optional[str]" = None) -> "Optional[str]":
+    _rev_re = re.compile(r"'dart_boringssl_rev':\s*'([a-f0-9]{30,})'")
+
+    # Primary: Flutter framework DEPS at the release tag
     deps = fetch_url(Config.FLUTTER_DEPS_URL.format(version=version))
-    if not deps:
-        return None
-    match = re.search(r"'dart_boringssl_rev':\s*'([a-f0-9]+)'", deps)
-    return match.group(1) if match else None
+    if deps:
+        m = _rev_re.search(deps)
+        if m:
+            return m.group(1)
+
+    # Fallback: engine repo DEPS at the engine commit (needed for Flutter >=3.27)
+    if engine_commit:
+        deps = fetch_url(Config.ENGINE_DEPS_URL.format(engine_commit=engine_commit))
+        if deps:
+            m = _rev_re.search(deps)
+            if m:
+                return m.group(1)
+
+    return None
 
 
 def fetch_boringssl_file(rev: str) -> "Optional[str]":
@@ -843,7 +859,7 @@ def run_analysis(libapp_path: str, libflutter_path: str, arch: str,
     print(f"[+] Flutter {flutter_version.version}  engine {flutter_version.engine_commit}")
 
     # 2. BoringSSL error line
-    boringssl_rev = get_boringssl_revision(flutter_version.version)
+    boringssl_rev = get_boringssl_revision(flutter_version.version, flutter_version.engine_commit)
     if not boringssl_rev:
         print("[!] Could not find BoringSSL revision in Flutter DEPS")
         return 1
