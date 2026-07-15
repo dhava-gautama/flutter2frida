@@ -7,7 +7,12 @@ __pycache__/
 *.aar
 enginehash.csv
 disable-flutter-tls.js
+config.js
 *.js.generated
+debug_*.js
+diagnose*.py
+*_output.txt
+frida_output.txt
 tmp_*/
 flutter_tls_*/
 .env
