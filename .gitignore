@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+*.pyo
+*.apk
+*.so
+*.jar
+*.aar
+enginehash.csv
+disable-flutter-tls.js
+*.js.generated
+tmp_*/
+flutter_tls_*/
+.env
